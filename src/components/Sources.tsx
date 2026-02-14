@@ -12,6 +12,7 @@ import {
   type ImportProgress,
   type SessionPreview,
 } from "../lib/api";
+import { runImportWithAutoProcess } from "../lib/importFlow";
 
 function formatRelativeDate(dateStr: string): string {
   const today = new Date();
@@ -104,19 +105,28 @@ export default function Sources() {
   const handleImportSingle = async (agentId: string) => {
     setImportingAgent(agentId);
     try {
-      const result = await runImport(agentId, cutoffDays);
+      const result = await runImportWithAutoProcess({
+        agentId,
+        cutoffDays,
+        deps: {
+          runImport,
+          processDates,
+          onProgress: (cb) => onProcessingProgress(cb),
+          offProgress: () => offProcessingProgress(),
+        },
+        onProgress: (progress) => setProcessingState((prev) => prev ? { ...prev, ...progress } : null),
+        onAutoProcessStart: (_agentId, totalDates) => {
+          setProcessingState({
+            agentId,
+            current: "",
+            index: 0,
+            total: totalDates,
+          });
+        },
+      });
       setImportResults((prev) => ({ ...prev, [agentId]: result }));
 
-      // Auto-process imported dates
-      if (result.dates && result.dates.length > 0) {
-        setProcessingState({ agentId, current: "", index: 0, total: result.dates.length });
-        onProcessingProgress((progress) => {
-          setProcessingState((prev) => prev ? { ...prev, ...progress } : null);
-        });
-        await processDates(result.dates);
-        offProcessingProgress();
-        setProcessingState(null);
-      }
+      setProcessingState(null);
     } catch {
       setImportResults((prev) => ({
         ...prev,

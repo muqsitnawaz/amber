@@ -25,12 +25,8 @@ function daysAgo(dateStr: string): string {
   return `${diff}d ago`;
 }
 
-interface KnowledgeProps {
-  initialTab?: Tab;
-}
-
-export default function Knowledge({ initialTab }: KnowledgeProps) {
-  const [activeTab, setActiveTab] = useState<Tab>(initialTab || "project");
+export default function Knowledge() {
+  const [activeTab, setActiveTab] = useState<Tab>("project");
   const [entities, setEntities] = useState<KnowledgeEntity[]>([]);
   const [counts, setCounts] = useState({ project: 0, person: 0, topic: 0 });
   const [search, setSearch] = useState("");

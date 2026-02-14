@@ -1,4 +1,4 @@
-export type View = "home" | "context" | "knowledge" | "sources" | "clients" | "settings";
+import { type View } from "../lib/navigation";
 
 interface SidebarProps {
   currentView: View;
@@ -6,11 +6,8 @@ interface SidebarProps {
 }
 
 const navItems: Array<{ id: View; label: string; icon: string }> = [
-  { id: "home", label: "Home", icon: "\u25C7" },
-  { id: "context", label: "Context", icon: "\u2630" },
-  { id: "knowledge", label: "Knowledge", icon: "\u25C8" },
-  { id: "sources", label: "Sources", icon: "\u26A1" },
-  { id: "clients", label: "Clients", icon: "\u25CB" },
+  { id: "context", label: "Context", icon: "\u25C8" },
+  { id: "knowledge", label: "Knowledge", icon: "\u2662" },
   { id: "settings", label: "Settings", icon: "\u2699" },
 ];
 

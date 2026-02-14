@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { getConfig, updateConfig, type AmberConfig } from "../lib/api";
+import Sources from "./Sources";
+import Clients from "./Clients";
 
 const defaultConfig: AmberConfig = {
   schedule: {
@@ -55,10 +57,24 @@ export default function Settings() {
   ) =>
     setConfig((c) => ({
       ...c,
-      processing: {
-        ...c.processing,
-        ...partial,
-      },
+      processing: (() => {
+        const previousProvider = c.processing?.provider;
+        const previousModel = c.processing?.model;
+        const nextProcessing = {
+          ...c.processing,
+          ...partial,
+        };
+
+        if (
+          partial.provider === "codex" &&
+          previousProvider !== "codex" &&
+          previousModel === defaultConfig.processing.model
+        ) {
+          return { ...nextProcessing, model: "spark" };
+        }
+
+        return nextProcessing;
+      })(),
     }));
 
   return (
@@ -170,6 +186,18 @@ export default function Settings() {
               </div>
             </>
           )}
+        </div>
+
+        {/* Sources */}
+        <div className="section">
+          <div className="section-title">Sources</div>
+          <Sources />
+        </div>
+
+        {/* Connections */}
+        <div className="section">
+          <div className="section-title">Connections</div>
+          <Clients />
         </div>
       </div>
 

@@ -387,17 +387,12 @@ function HeatmapCalendar({
 
 // ── Main Context List ──
 
-interface ContextListProps {
-  initialFilter?: string;
-  initialDate?: string;
-}
-
-export default function ContextList({ initialFilter, initialDate }: ContextListProps) {
-  const [selectedDate, setSelectedDate] = useState(initialDate || todayISO());
+export default function ContextList() {
+  const [selectedDate, setSelectedDate] = useState(todayISO());
   const [entries, setEntries] = useState<ContextEntry[]>([]);
   const [entryCounts, setEntryCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<string | null>(initialFilter || null);
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [groupBySource, setGroupBySource] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[] | null>(null);

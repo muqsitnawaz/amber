@@ -238,18 +238,7 @@ body {
   50% { opacity: 1; }
 }
 
-/* ═══ Home View ═══ */
-
-.home-view {
-  padding-bottom: 24px;
-}
-
-.home-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  padding: 16px 24px;
-}
+/* ═══ Stat Cards ═══ */
 
 .stat-card {
   background: var(--bg-secondary);
@@ -273,43 +262,6 @@ body {
   font-size: 11px;
   color: var(--text-tertiary);
   margin-top: 4px;
-}
-
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  display: inline-block;
-}
-
-.status-dot.active {
-  background: var(--green);
-  box-shadow: 0 0 6px var(--green-dim);
-}
-
-.status-dot.inactive {
-  background: var(--text-tertiary);
-  opacity: 0.5;
-}
-
-.home-note {
-  padding: 0 24px;
-}
-
-.home-note h3 {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--text-tertiary);
-  margin-bottom: 12px;
-}
-
-.home-empty {
-  color: var(--text-tertiary);
-  font-size: 13px;
-  padding: 24px 0;
 }
 
 /* ═══ Note Content (Markdown) ═══ */
@@ -1662,71 +1614,6 @@ input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px;
 
 .btn-cancel:hover { background: var(--bg-hover); color: var(--text-primary); }
 
-/* ═══ Home Pins ═══ */
-
-.home-pins {
-  padding: 0 24px 16px;
-}
-
-.home-pins h3 {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--text-tertiary);
-  margin-bottom: 12px;
-}
-
-.home-pins-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.pin-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
-  border-radius: var(--radius-lg);
-  padding: 10px 14px;
-  cursor: pointer;
-  transition: border-color var(--duration-swift) var(--ease-settle);
-}
-
-.pin-card:hover {
-  border-color: var(--border-strong);
-}
-
-.pin-card-date {
-  font-size: 10px;
-  color: var(--text-tertiary);
-  font-variant-numeric: tabular-nums;
-  margin-bottom: 2px;
-}
-
-.pin-card-source {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-tertiary);
-  margin-bottom: 3px;
-}
-
-.pin-card-title {
-  font-size: 13px;
-  color: var(--text-primary);
-  line-height: 1.4;
-}
-
-.pin-card-note {
-  font-size: 12px;
-  color: var(--accent-text);
-  margin-top: 3px;
-  font-style: italic;
-  opacity: 0.8;
-}
 
 /* ═══ Knowledge View ═══ */
 
@@ -1820,14 +1707,6 @@ input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px;
   color: var(--red);
 }
 
-/* ═══ Home Knowledge Stats ═══ */
-
-.home-knowledge-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  padding: 0 24px 16px;
-}
 
 /* ═══ Skeleton Loading ═══ */
 
