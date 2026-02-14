@@ -1,34 +1,23 @@
 import { useState, useEffect } from "react";
 import { getConfig, updateConfig, type AmberConfig } from "../lib/api";
 
-interface SettingsProps {
-  onBack: () => void;
-}
-
 const defaultConfig: AmberConfig = {
-  sources: {
-    git: {
-      watch_paths: [],
-      scan_depth: 3,
-      enabled: true,
-    },
-  },
-  summarizer: {
-    provider: "openai",
-    model: "gpt-4o-mini",
-    api_base: "https://api.openai.com/v1",
-    api_key_env: "OPENAI_API_KEY",
-  },
   schedule: {
     ingest_minutes: 5,
     daily_hour: 18,
   },
   storage: {
-    base_dir: "",
+    base_dir: "~/.amber",
+  },
+  processing: {
+    provider: "claude",
+    model: "claude-sonnet-4-5-20250929",
+    codex_command: "codex",
+    codex_args: ["--headless", "--model", "{model}", "-p", "{prompt}"],
   },
 };
 
-export default function Settings({ onBack }: SettingsProps) {
+export default function Settings() {
   const [config, setConfig] = useState<AmberConfig>(defaultConfig);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
@@ -55,106 +44,30 @@ export default function Settings({ onBack }: SettingsProps) {
     }
   };
 
-  const updateGit = (partial: Partial<AmberConfig["sources"]["git"]>) =>
-    setConfig((c) => ({
-      ...c,
-      sources: { ...c.sources, git: { ...c.sources.git, ...partial } },
-    }));
-
-  const updateSummarizer = (partial: Partial<AmberConfig["summarizer"]>) =>
-    setConfig((c) => ({ ...c, summarizer: { ...c.summarizer, ...partial } }));
-
   const updateSchedule = (partial: Partial<AmberConfig["schedule"]>) =>
     setConfig((c) => ({ ...c, schedule: { ...c.schedule, ...partial } }));
 
   const updateStorage = (partial: Partial<AmberConfig["storage"]>) =>
     setConfig((c) => ({ ...c, storage: { ...c.storage, ...partial } }));
 
+  const updateProcessing = (
+    partial: Partial<NonNullable<AmberConfig["processing"]>>,
+  ) =>
+    setConfig((c) => ({
+      ...c,
+      processing: {
+        ...c.processing,
+        ...partial,
+      },
+    }));
+
   return (
     <div className="settings">
-      <div className="settings-header">
-        <button className="btn-back" onClick={onBack} title="Back">
-          &#8592;
-        </button>
-        <h2>Settings</h2>
+      <div className="view-header">
+        <h1>Settings</h1>
       </div>
 
       <div className="settings-body">
-        {/* Git Watcher */}
-        <div className="section">
-          <div className="section-title">Git Watcher</div>
-          <div className="field">
-            <label>Watch Paths (one per line)</label>
-            <textarea
-              value={config.sources.git.watch_paths.join("\n")}
-              onChange={(e) =>
-                updateGit({
-                  watch_paths: e.target.value.split("\n").filter((p) => p.trim()),
-                })
-              }
-              placeholder="/path/to/repo"
-            />
-          </div>
-          <div className="field">
-            <label>Scan Depth</label>
-            <input
-              type="number"
-              min={1}
-              max={10}
-              value={config.sources.git.scan_depth}
-              onChange={(e) => updateGit({ scan_depth: Number(e.target.value) })}
-            />
-          </div>
-          <div className="field">
-            <div className="field-row">
-              <input
-                type="checkbox"
-                id="git-enabled"
-                checked={config.sources.git.enabled}
-                onChange={(e) => updateGit({ enabled: e.target.checked })}
-              />
-              <label htmlFor="git-enabled">Enabled</label>
-            </div>
-          </div>
-        </div>
-
-        {/* LLM Provider */}
-        <div className="section">
-          <div className="section-title">LLM Provider</div>
-          <div className="field">
-            <label>Provider</label>
-            <input
-              type="text"
-              value={config.summarizer.provider}
-              onChange={(e) => updateSummarizer({ provider: e.target.value })}
-            />
-          </div>
-          <div className="field">
-            <label>Model</label>
-            <input
-              type="text"
-              value={config.summarizer.model}
-              onChange={(e) => updateSummarizer({ model: e.target.value })}
-            />
-          </div>
-          <div className="field">
-            <label>API Base URL</label>
-            <input
-              type="text"
-              value={config.summarizer.api_base}
-              onChange={(e) => updateSummarizer({ api_base: e.target.value })}
-            />
-          </div>
-          <div className="field">
-            <label>API Key Env Variable</label>
-            <input
-              type="text"
-              value={config.summarizer.api_key_env}
-              onChange={(e) => updateSummarizer({ api_key_env: e.target.value })}
-            />
-          </div>
-        </div>
-
         {/* Schedule */}
         <div className="section">
           <div className="section-title">Schedule</div>
@@ -196,6 +109,67 @@ export default function Settings({ onBack }: SettingsProps) {
               placeholder="~/.amber"
             />
           </div>
+        </div>
+
+        {/* Processing */}
+        <div className="section">
+          <div className="section-title">Processing Engine</div>
+          <div className="field">
+            <label>Provider</label>
+            <select
+              value={config.processing?.provider || "claude"}
+              onChange={(e) =>
+                updateProcessing({
+                  provider: e.target.value as "claude" | "codex",
+                })
+              }
+            >
+              <option value="claude">Claude</option>
+              <option value="codex">Codex</option>
+            </select>
+          </div>
+
+          <div className="field">
+            <label>Model</label>
+            <input
+              type="text"
+              value={config.processing?.model || ""}
+              onChange={(e) =>
+                updateProcessing({ model: e.target.value || defaultConfig.processing!.model })
+              }
+              placeholder="e.g. claude-sonnet-4-5-20250929 or spark"
+            />
+          </div>
+
+          {(config.processing?.provider || "claude") === "codex" && (
+            <>
+              <div className="field">
+                <label>Codex Command</label>
+                <input
+                  type="text"
+                  value={config.processing?.codex_command || "codex"}
+                  onChange={(e) =>
+                    updateProcessing({ codex_command: e.target.value })
+                  }
+                  placeholder="e.g. codex"
+                />
+              </div>
+
+              <div className="field">
+                <label>Codex Arguments</label>
+                <textarea
+                  rows={4}
+                  value={(config.processing?.codex_args ?? []).join("\n")}
+                  onChange={(e) =>
+                    updateProcessing({
+                      codex_args: e.target.value.split("\n").filter((a) => a.trim().length > 0),
+                    })
+                  }
+                  placeholder="Each arg on its own line. Use {model}, {prompt}, {mcpConfig} placeholders."
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
 

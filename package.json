@@ -2,25 +2,52 @@
   "name": "amber",
   "private": true,
   "version": "0.1.0",
-  "type": "module",
+  "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "tauri": "tauri"
+    "build": "vite build",
+    "package": "vite build && electron-builder",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "mcp": "node dist-electron/mcp-server.js"
+  },
+  "bin": {
+    "amber-mcp": "dist-electron/mcp-server.js"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.0.0",
-    "@tauri-apps/plugin-shell": "^2.0.0",
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "js-yaml": "^4.1.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-markdown": "^10.1.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.0.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.0.0",
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.1",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
     "typescript": "^5.6.2",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "vite-plugin-electron": "^0.28.0",
+    "vite-plugin-electron-renderer": "^0.14.0",
+    "vitest": "^4.0.18"
+  },
+  "build": {
+    "appId": "com.amber.app",
+    "productName": "Amber",
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/iconTemplate.png",
+      "category": "public.app-category.developer-tools"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "assets/**/*"
+    ]
   }
 }

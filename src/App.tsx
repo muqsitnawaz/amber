@@ -1,112 +1,54 @@
-import { useState, useEffect, useCallback } from "react";
-import { getDailyNote, getStatus, triggerSummarize, type AppStatus } from "./lib/api";
+import { useState, useCallback, useEffect, useRef } from "react";
+import Sidebar, { type View } from "./components/Sidebar";
+import Home from "./components/Home";
+import ContextList from "./components/ContextList";
+import Knowledge from "./components/Knowledge";
+import Sources from "./components/Sources";
+import Clients from "./components/Clients";
 import Settings from "./components/Settings";
 
-type View = "dashboard" | "settings";
-
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
-}
-
-function todayISO(): string {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+export interface NavigationState {
+  view: View;
+  contextDate?: string;
+  contextFilter?: string;
+  knowledgeTab?: "project" | "person" | "topic";
 }
 
 export default function App() {
-  const [view, setView] = useState<View>("dashboard");
-  const [note, setNote] = useState<string | null>(null);
-  const [status, setStatus] = useState<AppStatus | null>(null);
-  const [summarizing, setSummarizing] = useState(false);
+  const [nav, setNav] = useState<NavigationState>({ view: "context" });
+  const [viewKey, setViewKey] = useState(0);
+  const prevView = useRef(nav.view);
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [noteResult, statusResult] = await Promise.all([
-        getDailyNote(todayISO()),
-        getStatus(),
-      ]);
-      setNote(noteResult);
-      setStatus(statusResult);
-    } catch {
-      // Backend may not be ready yet
-    }
+  const navigateTo = useCallback((state: Partial<NavigationState> & { view: View }) => {
+    setNav(state);
   }, []);
 
+  // Increment key on view change to trigger fade-in animation
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 30_000);
-    return () => clearInterval(interval);
-  }, [fetchData]);
-
-  const handleSummarize = async () => {
-    setSummarizing(true);
-    try {
-      await triggerSummarize();
-      // Refresh after a short delay to pick up new note
-      setTimeout(fetchData, 2000);
-    } catch {
-      // Summarize may fail if not configured
-    } finally {
-      setSummarizing(false);
+    if (nav.view !== prevView.current) {
+      setViewKey((k) => k + 1);
+      prevView.current = nav.view;
     }
-  };
-
-  if (view === "settings") {
-    return <Settings onBack={() => setView("dashboard")} />;
-  }
+  }, [nav.view]);
 
   return (
-    <div className="app">
-      <div className="header">
-        <div>
-          <h1>Amber</h1>
-          <span className="header-date">{formatDate(new Date())}</span>
-        </div>
-        <button
-          className="btn-icon"
-          onClick={() => setView("settings")}
-          title="Settings"
-        >
-          &#9881;
-        </button>
-      </div>
-
-      <div className="content">
-        {note ? (
-          <div className="note-content">{note}</div>
-        ) : (
-          <div className="placeholder">
-            <span className="placeholder-icon">&#9672;</span>
-            <span>No notes yet for today</span>
-          </div>
-        )}
-      </div>
-
-      <div className="status-bar">
-        <div className="status-left">
-          <span>
-            <span
-              className={`status-dot ${status?.watchers_running ? "active" : "inactive"}`}
+    <div className="app-layout">
+      <Sidebar currentView={nav.view} onNavigate={(v) => navigateTo({ view: v })} />
+      <main className="main-content">
+        <div className="view-content" key={viewKey}>
+          {nav.view === "home" && <Home onNavigate={navigateTo} />}
+          {nav.view === "context" && (
+            <ContextList
+              initialFilter={nav.contextFilter}
+              initialDate={nav.contextDate}
             />
-            {status?.watchers_running ? "Watching" : "Idle"}
-          </span>
-          <span>{status?.buffered_events ?? 0} buffered</span>
+          )}
+          {nav.view === "knowledge" && <Knowledge initialTab={nav.knowledgeTab} />}
+          {nav.view === "sources" && <Sources />}
+          {nav.view === "clients" && <Clients />}
+          {nav.view === "settings" && <Settings />}
         </div>
-        <button
-          className="btn-summarize"
-          onClick={handleSummarize}
-          disabled={summarizing}
-        >
-          {summarizing ? "Running..." : "Summarize Now"}
-        </button>
-      </div>
+      </main>
     </div>
   );
 }

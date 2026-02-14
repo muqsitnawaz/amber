@@ -1,0 +1,30 @@
+export const sourceLabels: Record<string, string> = {
+  git: "Git",
+  claude_code: "Claude Code",
+  clawdbot: "Clawdbot",
+  codex: "Codex",
+  opencode: "OpenCode",
+  chrome: "Chrome",
+  safari: "Safari",
+  chatgpt: "ChatGPT",
+  obsidian: "Obsidian",
+  notion: "Notion",
+  feedback: "Feedback",
+  user: "Manual",
+  unknown: "Event",
+};
+
+export const sourceColors: Record<string, string> = {
+  git: "#f97316",
+  claude_code: "#a78bfa",
+  clawdbot: "#60a5fa",
+  codex: "#10b981",
+  opencode: "#f472b6",
+  chrome: "#4ade80",
+  safari: "#38bdf8",
+  chatgpt: "#34d399",
+  obsidian: "#a855f7",
+  notion: "#e5e5e5",
+  feedback: "#fbbf24",
+  user: "#d4952a",
+};
