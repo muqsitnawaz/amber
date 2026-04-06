@@ -1,5 +1,15 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { getWikiPages, getWikiPage, searchWiki, type WikiPage } from "../lib/api";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import {
+  getWikiPages,
+  getWikiPage,
+  searchWiki,
+  isWikiFirstLaunch,
+  runWikiPipeline,
+  onWikiPipelineProgress,
+  offWikiPipelineProgress,
+  type WikiPage,
+  type PipelineProgress,
+} from "../lib/api";
 
 type WikiFilter = "all" | "project" | "person" | "topic";
 
@@ -78,6 +88,9 @@ export default function Wiki() {
   const [filter, setFilter] = useState<WikiFilter>("all");
   const [search, setSearch] = useState("");
   const [loadingPage, setLoadingPage] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const hasCheckedFirstLaunch = useRef(false);
 
   const pageIndex = useMemo(() => {
     const index = new Map<string, WikiPage>();
@@ -102,13 +115,53 @@ export default function Wiki() {
       const all = await getWikiPages();
       setAllPages(all);
       setPages(all);
+      return all;
     } catch {
       // Backend not ready
+      return [];
     }
   }, []);
 
+  // Auto-sync on first launch
   useEffect(() => {
-    fetchPages();
+    if (hasCheckedFirstLaunch.current) return;
+    hasCheckedFirstLaunch.current = true;
+
+    (async () => {
+      const pages = await fetchPages();
+      if (pages.length > 0) return; // Already have pages
+
+      // Check if this is first launch with available data
+      const isFirst = await isWikiFirstLaunch();
+      if (!isFirst) return;
+
+      // Auto-run pipeline
+      setSyncing(true);
+      setSyncMessage("Scanning your AI sessions...");
+
+      const handleProgress = (progress: PipelineProgress) => {
+        setSyncMessage(progress.message);
+      };
+
+      onWikiPipelineProgress(handleProgress);
+
+      try {
+        const result = await runWikiPipeline({ cutoffDays: 30 });
+        if (result.pagesCreated > 0) {
+          setSyncMessage(`Found ${result.pagesCreated} topics from ${result.sessionsScanned} sessions`);
+          await fetchPages();
+        } else {
+          setSyncMessage(null);
+        }
+      } catch {
+        setSyncMessage(null);
+      } finally {
+        offWikiPipelineProgress();
+        setSyncing(false);
+        // Clear message after a moment
+        setTimeout(() => setSyncMessage(null), 3000);
+      }
+    })();
   }, [fetchPages]);
 
   useEffect(() => {
@@ -208,6 +261,24 @@ export default function Wiki() {
       return <span key={`text-${index}`}>{part}</span>;
     });
   };
+
+  // Show syncing state
+  if (syncing) {
+    return (
+      <div className="wiki-view">
+        <div className="view-header">
+          <div>
+            <h1>Wiki</h1>
+            <span className="view-subtitle">Building your knowledge base...</span>
+          </div>
+        </div>
+        <div className="wiki-sync-state">
+          <div className="sync-spinner" />
+          <p>{syncMessage || "Scanning sessions..."}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="wiki-view">

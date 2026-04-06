@@ -1764,6 +1764,40 @@ input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px;
   padding: 16px;
 }
 
+.wiki-sync-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 400px;
+  margin: 24px;
+  color: var(--text-secondary);
+}
+
+.wiki-sync-state p {
+  font-size: 14px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.sync-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .wiki-grid {
   display: grid;
   grid-template-columns: 260px 1fr;
