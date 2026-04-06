@@ -31,6 +31,7 @@ import * as path from "path";
 import * as storage from "./storage";
 import { RawEvent, PinRecord, EventKind, EntityType } from "./types";
 import { validateDate, validateMemoryInput, validateFeedbackType, validateSearchQuery } from "./validate";
+import { getWikiPage, listWikiPages, searchWiki, updateWikiPage } from "./wiki";
 
 const execAsync = promisify(execFile);
 const MQ_PATH = process.env.MQ_PATH || "mq";
@@ -299,6 +300,53 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           },
         },
         required: ["query"],
+      },
+    },
+    {
+      name: "read_wiki_page",
+      description: "Read a wiki page by its ID",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Wiki page ID (slug)" },
+        },
+        required: ["id"],
+      },
+    },
+    {
+      name: "list_wiki_pages",
+      description: "List all wiki pages, optionally filtered by type",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          type: {
+            type: "string",
+            description: "Optional filter: 'project', 'person', or 'topic'.",
+          },
+        },
+      },
+    },
+    {
+      name: "search_wiki",
+      description: "Search wiki pages by content",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          query: { type: "string", description: "Search query string." },
+        },
+        required: ["query"],
+      },
+    },
+    {
+      name: "update_wiki_page",
+      description: "Update the content of a wiki page",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Wiki page ID (slug)" },
+          content: { type: "string", description: "New markdown content." },
+        },
+        required: ["id", "content"],
       },
     },
     {
@@ -716,6 +764,43 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const dailyDir = path.join(baseDir, "daily");
       const result = await runMq(path.join(dailyDir, "*.md"), `.search("${searchQuery.replace(/"/g, '\\"')}")`);
       return { content: [{ type: "text", text: result || `No notes matching "${searchQuery}".` }] };
+    }
+
+    case "read_wiki_page": {
+      const id = args?.id as string;
+      if (!id) {
+        return { content: [{ type: "text", text: "Error: 'id' is required." }], isError: true };
+      }
+      const page = await getWikiPage(id);
+      if (!page) {
+        return { content: [{ type: "text", text: `Wiki page "${id}" not found` }] };
+      }
+      return { content: [{ type: "text", text: page.content }] };
+    }
+
+    case "list_wiki_pages": {
+      const filterType = args?.type as "project" | "person" | "topic" | undefined;
+      const pages = await listWikiPages(filterType);
+      return { content: [{ type: "text", text: JSON.stringify(pages, null, 2) }] };
+    }
+
+    case "search_wiki": {
+      const query = args?.query as string;
+      if (!query) {
+        return { content: [{ type: "text", text: "Error: 'query' is required." }], isError: true };
+      }
+      const results = await searchWiki(query);
+      return { content: [{ type: "text", text: JSON.stringify(results, null, 2) }] };
+    }
+
+    case "update_wiki_page": {
+      const id = args?.id as string;
+      const content = args?.content as string;
+      if (!id || !content) {
+        return { content: [{ type: "text", text: "Error: 'id' and 'content' are required." }], isError: true };
+      }
+      await updateWikiPage(id, content);
+      return { content: [{ type: "text", text: `Wiki page "${id}" updated.` }] };
     }
 
     default:

@@ -24,6 +24,13 @@ contextBridge.exposeInMainWorld("amber", {
   searchKnowledge: (query: string) => ipcRenderer.invoke("search-knowledge", query),
   removeKnowledgeEntity: (id: string) => ipcRenderer.invoke("remove-knowledge-entity", id),
   backfillKnowledge: () => ipcRenderer.invoke("backfill-knowledge"),
+  wiki: {
+    list: (type?: string) => ipcRenderer.invoke("wiki:list", type),
+    get: (id: string) => ipcRenderer.invoke("wiki:get", id),
+    search: (query: string) => ipcRenderer.invoke("wiki:search", query),
+    compile: () => ipcRenderer.invoke("wiki:compile"),
+    isFirstLaunch: () => ipcRenderer.invoke("wiki:isFirstLaunch"),
+  },
   processDates: (dates: string[]) => ipcRenderer.invoke("process-dates", dates),
   onProcessingProgress: (cb: (_: unknown, p: unknown) => void) => {
     ipcRenderer.on("processing-progress", cb);

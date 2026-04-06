@@ -6,6 +6,7 @@ interface SidebarProps {
 }
 
 const navItems: Array<{ id: View; label: string; icon: string }> = [
+  { id: "wiki", label: "Wiki", icon: "W" },
   { id: "context", label: "Context", icon: "\u25C8" },
   { id: "knowledge", label: "Knowledge", icon: "\u2662" },
   { id: "settings", label: "Settings", icon: "\u2699" },

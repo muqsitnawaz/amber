@@ -3,6 +3,7 @@ import Sidebar from "./components/Sidebar";
 import ContextList from "./components/ContextList";
 import Knowledge from "./components/Knowledge";
 import Settings from "./components/Settings";
+import Wiki from "./components/Wiki";
 import { normalizeView, type View } from "./lib/navigation";
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
       <Sidebar currentView={view} onNavigate={navigateTo} />
       <main className="main-content">
         <div className="view-content">
+          {view === "wiki" && <Wiki />}
           {view === "context" && <ContextList />}
           {view === "knowledge" && <Knowledge />}
           {view === "settings" && <Settings />}

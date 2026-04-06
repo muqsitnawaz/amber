@@ -10,6 +10,9 @@ import { ContextEntry, PinRecord, EntityType, KnowledgeEntity } from "./types";
 import { validateDate, validateConfig } from "./validate";
 import { scanAgentSources, runImport, listAgentSessionPreviews, type AgentSource, type ImportProgress, type SessionPreview } from "./import";
 import { backfillFromDailyNotes } from "./knowledge";
+import { listWikiPages, getWikiPage, searchWiki } from "./wiki";
+import { compileAllPending } from "./compiler";
+import { isFirstLaunch } from "./scanner";
 
 let appState = {
   bufferedEvents: 0,
@@ -315,6 +318,28 @@ export function registerIpcHandlers() {
   ipcMain.handle("backfill-knowledge", async (): Promise<{ processed: number; entities: number }> => {
     const cfg = await config.loadOrDefault();
     return backfillFromDailyNotes(cfg.storage.base_dir);
+  });
+
+  // ── Wiki ──
+
+  ipcMain.handle("wiki:list", async (_event, type?: string) => {
+    return listWikiPages(type);
+  });
+
+  ipcMain.handle("wiki:get", async (_event, id: string) => {
+    return getWikiPage(id);
+  });
+
+  ipcMain.handle("wiki:search", async (_event, query: string) => {
+    return searchWiki(query);
+  });
+
+  ipcMain.handle("wiki:compile", async () => {
+    return compileAllPending();
+  });
+
+  ipcMain.handle("wiki:isFirstLaunch", async () => {
+    return isFirstLaunch();
   });
 
   // Process a batch of dates (after import)

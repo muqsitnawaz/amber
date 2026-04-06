@@ -22,6 +22,13 @@ interface AmberBridge {
   searchKnowledge(query: string): Promise<import("./lib/api").KnowledgeEntity[]>;
   removeKnowledgeEntity(id: string): Promise<void>;
   backfillKnowledge(): Promise<{ processed: number; entities: number }>;
+  wiki: {
+    list(type?: string): Promise<import("./lib/api").WikiPage[]>;
+    get(id: string): Promise<import("./lib/api").WikiPage | null>;
+    search(query: string): Promise<import("./lib/api").WikiPage[]>;
+    compile(): Promise<void>;
+    isFirstLaunch(): Promise<boolean>;
+  };
   processDates(dates: string[]): Promise<{ processed: number; failed: string[] }>;
   onProcessingProgress(cb: (event: unknown, progress: unknown) => void): void;
   offProcessingProgress(): void;

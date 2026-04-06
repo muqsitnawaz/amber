@@ -167,6 +167,25 @@ export const searchKnowledge = (query: string): Promise<KnowledgeEntity[]> => wi
 export const removeKnowledgeEntity = (id: string): Promise<void> => window.amber.removeKnowledgeEntity(id);
 export const backfillKnowledge = (): Promise<{ processed: number; entities: number }> => window.amber.backfillKnowledge();
 
+// ── Wiki ──
+
+export interface WikiPage {
+  id: string;
+  title: string;
+  type: "project" | "person" | "topic";
+  content: string;
+  sources: string[];
+  related: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export const getWikiPages = (type?: string): Promise<WikiPage[]> => window.amber.wiki.list(type);
+export const getWikiPage = (id: string): Promise<WikiPage | null> => window.amber.wiki.get(id);
+export const searchWiki = (query: string): Promise<WikiPage[]> => window.amber.wiki.search(query);
+export const compileWiki = (): Promise<void> => window.amber.wiki.compile();
+export const isWikiFirstLaunch = (): Promise<boolean> => window.amber.wiki.isFirstLaunch();
+
 export const processDates = (dates: string[]): Promise<{ processed: number; failed: string[] }> =>
   window.amber.processDates(dates);
 
