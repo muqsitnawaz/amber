@@ -180,11 +180,37 @@ export interface WikiPage {
   updated_at: string;
 }
 
+export interface PipelineProgress {
+  stage: "scanning" | "extracting" | "creating" | "compiling" | "done" | "error";
+  current: number;
+  total: number;
+  message: string;
+}
+
+export interface PipelineResult {
+  sessionsScanned: number;
+  entitiesExtracted: number;
+  pagesCreated: number;
+  pagesUpdated: number;
+  errors: string[];
+}
+
+export interface SourcesSummary {
+  sources: AgentSource[];
+  totalSessions: number;
+  hasData: boolean;
+}
+
 export const getWikiPages = (type?: string): Promise<WikiPage[]> => window.amber.wiki.list(type);
 export const getWikiPage = (id: string): Promise<WikiPage | null> => window.amber.wiki.get(id);
 export const searchWiki = (query: string): Promise<WikiPage[]> => window.amber.wiki.search(query);
-export const compileWiki = (): Promise<void> => window.amber.wiki.compile();
 export const isWikiFirstLaunch = (): Promise<boolean> => window.amber.wiki.isFirstLaunch();
+export const getWikiSources = (cutoffDays?: number): Promise<SourcesSummary> => window.amber.wiki.getSources(cutoffDays);
+export const runWikiPipeline = (options?: { cutoffDays?: number; agents?: string[] }): Promise<PipelineResult> =>
+  window.amber.wiki.runPipeline(options);
+export const onWikiPipelineProgress = (cb: (progress: PipelineProgress) => void) =>
+  window.amber.wiki.onPipelineProgress((_event: unknown, p: unknown) => cb(p as PipelineProgress));
+export const offWikiPipelineProgress = () => window.amber.wiki.offPipelineProgress();
 
 export const processDates = (dates: string[]): Promise<{ processed: number; failed: string[] }> =>
   window.amber.processDates(dates);

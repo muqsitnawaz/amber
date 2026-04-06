@@ -26,8 +26,11 @@ interface AmberBridge {
     list(type?: string): Promise<import("./lib/api").WikiPage[]>;
     get(id: string): Promise<import("./lib/api").WikiPage | null>;
     search(query: string): Promise<import("./lib/api").WikiPage[]>;
-    compile(): Promise<void>;
     isFirstLaunch(): Promise<boolean>;
+    getSources(cutoffDays?: number): Promise<import("./lib/api").SourcesSummary>;
+    runPipeline(options?: { cutoffDays?: number; agents?: string[] }): Promise<import("./lib/api").PipelineResult>;
+    onPipelineProgress(cb: (event: unknown, progress: import("./lib/api").PipelineProgress) => void): void;
+    offPipelineProgress(): void;
   };
   processDates(dates: string[]): Promise<{ processed: number; failed: string[] }>;
   onProcessingProgress(cb: (event: unknown, progress: unknown) => void): void;

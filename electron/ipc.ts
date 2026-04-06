@@ -11,8 +11,7 @@ import { validateDate, validateConfig } from "./validate";
 import { scanAgentSources, runImport, listAgentSessionPreviews, type AgentSource, type ImportProgress, type SessionPreview } from "./import";
 import { backfillFromDailyNotes } from "./knowledge";
 import { listWikiPages, getWikiPage, searchWiki } from "./wiki";
-import { compileAllPending } from "./compiler";
-import { isFirstLaunch } from "./scanner";
+import { runPipeline, isFirstLaunch, getSourcesSummary, type PipelineProgress, type PipelineResult } from "./pipeline";
 
 let appState = {
   bufferedEvents: 0,
@@ -334,12 +333,23 @@ export function registerIpcHandlers() {
     return searchWiki(query);
   });
 
-  ipcMain.handle("wiki:compile", async () => {
-    return compileAllPending();
-  });
-
   ipcMain.handle("wiki:isFirstLaunch", async () => {
     return isFirstLaunch();
+  });
+
+  ipcMain.handle("wiki:getSources", async (_event, cutoffDays?: number) => {
+    return getSourcesSummary(cutoffDays || 30);
+  });
+
+  ipcMain.handle("wiki:runPipeline", async (event, options?: { cutoffDays?: number; agents?: string[] }) => {
+    const cfg = await config.loadOrDefault();
+    return runPipeline({
+      ...options,
+      baseDir: cfg.storage.base_dir,
+      onProgress: (progress: PipelineProgress) => {
+        event.sender.send("wiki:pipelineProgress", progress);
+      },
+    });
   });
 
   // Process a batch of dates (after import)

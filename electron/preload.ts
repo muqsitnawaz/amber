@@ -28,8 +28,16 @@ contextBridge.exposeInMainWorld("amber", {
     list: (type?: string) => ipcRenderer.invoke("wiki:list", type),
     get: (id: string) => ipcRenderer.invoke("wiki:get", id),
     search: (query: string) => ipcRenderer.invoke("wiki:search", query),
-    compile: () => ipcRenderer.invoke("wiki:compile"),
     isFirstLaunch: () => ipcRenderer.invoke("wiki:isFirstLaunch"),
+    getSources: (cutoffDays?: number) => ipcRenderer.invoke("wiki:getSources", cutoffDays),
+    runPipeline: (options?: { cutoffDays?: number; agents?: string[] }) =>
+      ipcRenderer.invoke("wiki:runPipeline", options),
+    onPipelineProgress: (cb: (_: unknown, p: unknown) => void) => {
+      ipcRenderer.on("wiki:pipelineProgress", cb);
+    },
+    offPipelineProgress: () => {
+      ipcRenderer.removeAllListeners("wiki:pipelineProgress");
+    },
   },
   processDates: (dates: string[]) => ipcRenderer.invoke("process-dates", dates),
   onProcessingProgress: (cb: (_: unknown, p: unknown) => void) => {
